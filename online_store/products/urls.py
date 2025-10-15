@@ -1,10 +1,11 @@
-
 from django.urls import path
-from .views import ProductViewSet, CategoryViewSet
 
-urlpatterns = [
-    path('', ProductViewSet.as_view({'get': 'list'}), name='product-list'),
-    path('<int:pk>/', ProductViewSet.as_view({'get': 'retrieve'}), name='product-detail'),
-    path('categories/', CategoryViewSet.as_view({'get': 'list'}), name='category-list'),
-    path('categories/<int:pk>/', CategoryViewSet.as_view({'get': 'retrieve'}), name='category-detail'),
-]
+from accounts import views as accounts_views
+from . import views
+from rest_framework.routers import DefaultRouter
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+router = DefaultRouter()
+router.register(r'users', accounts_views.UserViewSet, basename='user')
+urlpatterns = router.urls

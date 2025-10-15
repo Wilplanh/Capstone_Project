@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics, viewsets, permissions
+from rest_framework import viewsets, permissions
 from .serializers import RegisterSerializer, UserSerializer
 from django.contrib.auth import get_user_model
 
@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class RegisterView(generics.CreateAPIView):
+class RegisterViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
@@ -17,4 +17,18 @@ class RegisterView(generics.CreateAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAdminUser]  # only admins can CRUD users here
+    permission_classes = [permissions.IsAdminUser]  
+
+class ProfileViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+    
+class LoginViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

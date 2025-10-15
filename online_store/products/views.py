@@ -1,67 +1,52 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions, filters, status
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
-from .models import Product, Category
-from .serializers import ProductSerializer, CategorySerializer
+from .models import Product, Cart, CartItem, Order, OrderItem, Payment, Review
+from .serializers import ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer, PaymentSerializer, ReviewSerializer
+from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
-from django.db.models import Q
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 # Create your views here.
 
-
-
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Placeholder permission. For now, any authenticated user can create/edit products.
-    You can extend this to check ownership.
-    """
-    def has_permission(self, request, view):
-        # Allow read-only for everyone, write for authenticated users
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return request.user and request.user.is_authenticated
-
 class ProductViewSet(viewsets.ModelViewSet):
-    """
-    list/retrieve/create/update/destroy + supports:
-    - search by name (partial)
-    - filter by category (id or slug), min_price, max_price, in_stock
-    - pagination from settings
-    """
-    queryset = Product.objects.select_related('category').all()
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsOwnerOrReadOnly]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'description']
-    ordering_fields = ['price', 'created_date', 'stock_quantity']
-    filterset_fields = ['category__id', 'category__slug']
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        # Price range filter
-        min_price = self.request.query_params.get('min_price')
-        max_price = self.request.query_params.get('max_price')
-        in_stock = self.request.query_params.get('in_stock')  # 'true' means stock_quantity > 0
 
-        if min_price:
-            try:
-                qs = qs.filter(price__gte=min_price)
-            except ValueError:
-                pass
-        if max_price:
-            try:
-                qs = qs.filter(price__lte=max_price)
-            except ValueError:
-                pass
-        if in_stock is not None:
-            if in_stock.lower() in ['true', '1', 'yes']:
-                qs = qs.filter(stock_quantity__gt=0)
-            elif in_stock.lower() in ['false', '0', 'no']:
-                qs = qs.filter(stock_quantity=0)
-        return qs
+class CartViewSet(viewsets.ModelViewSet):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class CartItemViewSet(viewsets.ModelViewSet):
+    queryset = CartItem.objects.all()
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class OrderItemViewSet(viewsets.ModelViewSet):
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]

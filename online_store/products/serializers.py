@@ -1,36 +1,50 @@
 from rest_framework import serializers
-from .models import Product, Category
+from .models import Product, Cart, CartItem, Order, OrderItem, Payment, Review
+from django.contrib.auth import get_user_model
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'slug']
+
+User = get_user_model()
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    category_id = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(), source='category', write_only=True, required=False
-    )
-
     class Meta:
         model = Product
-        fields = [
-            'id', 'name', 'description', 'price', 'category', 'category_id',
-            'stock_quantity', 'image_url', 'created_date'
-        ]
-        read_only_fields = ['id', 'created_date']
+        fields = '__all__'
 
-    def validate_name(self, value):
-        if not value.strip():
-            raise serializers.ValidationError("Product name cannot be empty.")
-        return value
+    def validate(self, data):
+        if data.get('price') is None or data['price'] <= 0:
+            raise serializers.ValidationError({'price': 'Price must be greater than 0.'})
+        if not data.get('name'):
+            raise serializers.ValidationError({'name': 'Name is required.'})
+        if data.get('stock_quantity') is None or data['stock_quantity'] < 0:
+            raise serializers.ValidationError({'stock_quantity': 'Stock quantity must be 0 or higher.'})
+        return data
 
-    def validate_price(self, value):
-        if value is None or value <= 0:
-            raise serializers.ValidationError("Price must be a positive number.")
-        return value
+class CartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cart
+        fields = '__all__'
 
-    def validate_stock_quantity(self, value):
-        if value < 0:
-            raise serializers.ValidationError("Stock quantity cannot be negative.")
-        return value
+class CartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = '__all__'
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = '__all__'
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = '__all__'
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
