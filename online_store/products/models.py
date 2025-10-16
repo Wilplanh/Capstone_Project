@@ -22,6 +22,8 @@ class Product(models.Model):
     def __str__(self):
         return self.name
     
+    
+    # Items available for carts
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -30,6 +32,7 @@ class Cart(models.Model):
         return f"Cart for {self.user.username}"
     
 
+    # Items in the cart
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -38,7 +41,8 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity} of {self.product.name} in Cart {self.cart.id}"
     
-
+    
+    # Orders placed by users
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -47,7 +51,8 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order {self.id} - Total: {self.total_price}"
-
+    
+    # Items in an order
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -57,7 +62,7 @@ class OrderItem(models.Model):
         return f"{self.quantity} of {self.product.name} in Order {self.order.id}"
 
 
-
+    # Payment details for orders
 class Payment(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -66,7 +71,9 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment of {self.amount} for Order {self.order.id}"
-
+    
+    
+    # Reviews for products
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)

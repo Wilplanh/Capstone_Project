@@ -1,34 +1,48 @@
-from django.shortcuts import render
 from rest_framework import viewsets, permissions
-from .serializers import RegisterSerializer, UserSerializer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
-
-# Create your views here.
-
-
+from .serializers import UserSerializer
 
 User = get_user_model()
-
-class RegisterViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAdminUser]  
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-class ProfileViewSet(viewsets.ModelViewSet):
+
+class RegisterViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
-    def get_object(self):
-        return self.request.user
     
-class LoginViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
 
-    def get_object(self):
-        return self.request.user
+        return Response(
+            {
+                "message": "Registration successful!",
+                "user": serializer.data
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key})
+        return Response({"error": "Invalid credentials"}, status=400)

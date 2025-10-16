@@ -1,11 +1,11 @@
-from django.urls import path
-
-from accounts import views as accounts_views
-from . import views
+from django.urls import path, include
+from .views import ProductViewSet
 from rest_framework.routers import DefaultRouter
-from django.contrib.auth import get_user_model
 
-User = get_user_model()
+
 router = DefaultRouter()
-router.register(r'users', accounts_views.UserViewSet, basename='user')
-urlpatterns = router.urls
+router.register(r'products', ProductViewSet, basename='product')
+
+urlpatterns = [
+    path('', include(router.urls)),
+]
