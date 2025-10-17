@@ -24,7 +24,7 @@ class ProductPagination(PageNumberPagination):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     pagination_class = ProductPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['name', 'category__name']
