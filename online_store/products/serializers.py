@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import Product, Cart, CartItem, Order, OrderItem, Payment, Review
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User 
 
 
-User = get_user_model()
+
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -48,3 +48,15 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
+        
+    def validate(self, data):
+        user = self.context['request'].user
+        product = data.get('product')
+
+        if Review.objects.filter(user=user, product=product).exists():
+            raise serializers.ValidationError("You have already reviewed this product.")
+        
+        return data    
+
+
+    

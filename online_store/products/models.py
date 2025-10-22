@@ -1,9 +1,9 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User 
 
 
 
-User = get_user_model()
+
 
 # Create your models here.
 
@@ -83,3 +83,5 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review for {self.product.name} - Rating: {self.rating}"   
+    
+# Product categories
